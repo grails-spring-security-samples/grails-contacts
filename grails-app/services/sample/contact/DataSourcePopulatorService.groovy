@@ -1,6 +1,8 @@
 package sample.contact
 
 import grails.gorm.transactions.Transactional
+import sample.contact.auth.UserDataService
+import sample.contact.auth.UserRoleDataService
 import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
 import static org.springframework.security.acls.domain.BasePermission.DELETE
 import static org.springframework.security.acls.domain.BasePermission.READ
@@ -17,11 +19,13 @@ import grails.plugin.springsecurity.acl.AclService
 import grails.plugin.springsecurity.acl.AclUtilService
 import sample.contact.auth.Role
 import sample.contact.auth.User
-import sample.contact.auth.UserRole
 
 @GrailsCompileStatic
 @Transactional
 class DataSourcePopulatorService {
+
+	UserDataService userDataService
+	UserRoleDataService userRoleDataService
 
 	private static final String[] firstNames = [
 		'Bob', 'Mary', 'James', 'Jane', 'Kristy', 'Kirsty', 'Kate', 'Jeni', 'Angela', 'Melanie', 'Kent',
@@ -131,10 +135,11 @@ class DataSourcePopulatorService {
 		SCH.clearContext()
 	}
 
+	@Transactional
 	private void createUser(String username, String password, boolean enabled, Role... roles) {
-		def user = new User(username: username, enabled: enabled, password: password).save()
-		for (role in roles) {
-			UserRole.create user, role
+		User user = userDataService.save(username, password, enabled)
+		for (Role role in roles) {
+			userRoleDataService.save(user, role)
 		}
 	}
 }
