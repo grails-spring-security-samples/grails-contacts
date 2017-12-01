@@ -1,13 +1,13 @@
 package sample.contact
 
+import grails.testing.mixin.integration.Integration
+
 import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.acls.domain.PrincipalSid
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
-
-import grails.test.mixin.integration.Integration
 import grails.transaction.Rollback
 import spock.lang.Specification
 
