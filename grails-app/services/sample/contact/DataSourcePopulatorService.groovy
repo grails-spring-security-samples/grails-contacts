@@ -5,8 +5,6 @@ import static org.springframework.security.acls.domain.BasePermission.ADMINISTRA
 import static org.springframework.security.acls.domain.BasePermission.DELETE
 import static org.springframework.security.acls.domain.BasePermission.READ
 import static org.springframework.security.acls.domain.BasePermission.WRITE
-
-import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.acls.model.ObjectIdentityGenerator
 import org.springframework.security.acls.model.ObjectIdentityRetrievalStrategy
@@ -23,7 +21,7 @@ import sample.contact.auth.UserRole
 
 @GrailsCompileStatic
 @Transactional
-class DataSourcePopulatorService implements InitializingBean {
+class DataSourcePopulatorService {
 
 	private static final String[] firstNames = [
 		'Bob', 'Mary', 'James', 'Jane', 'Kristy', 'Kirsty', 'Kate', 'Jeni', 'Angela', 'Melanie', 'Kent',
@@ -138,9 +136,5 @@ class DataSourcePopulatorService implements InitializingBean {
 		for (role in roles) {
 			UserRole.create user, role
 		}
-	}
-
-	void afterPropertiesSet() {
-		assert aclService, 'aclService required'
 	}
 }

@@ -1,6 +1,5 @@
 package sample.contact
 
-import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 import grails.gorm.transactions.Transactional
 import org.springframework.security.access.prepost.PostFilter
@@ -23,7 +22,7 @@ import sample.contact.auth.User
 
 @GrailsCompileStatic
 @Slf4j
-class ContactService implements InitializingBean {
+class ContactService {
 
 	private @Autowired AclService aclService
 	private @Autowired AclUtilService aclUtilService
@@ -121,9 +120,5 @@ class ContactService implements InitializingBean {
 		contact.email = email
 		contact.name = name
 		log.debug "Updated contact $contact"
-	}
-
-	void afterPropertiesSet() {
-		assert aclService, 'aclService required'
 	}
 }
