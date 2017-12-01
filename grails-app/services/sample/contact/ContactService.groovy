@@ -1,6 +1,5 @@
 package sample.contact
 
-import org.springframework.beans.factory.annotation.Autowired
 import grails.gorm.transactions.Transactional
 import org.springframework.security.access.prepost.PostFilter
 import org.springframework.security.access.prepost.PreAuthorize
@@ -24,9 +23,9 @@ import sample.contact.auth.User
 @Slf4j
 class ContactService {
 
-	private @Autowired AclService aclService
-	private @Autowired AclUtilService aclUtilService
-	private @Autowired SpringSecurityService springSecurityService
+	AclService aclService
+	AclUtilService aclUtilService
+	SpringSecurityService springSecurityService
 
 	@PreAuthorize('hasPermission(#contact, admin)')
 	@Transactional

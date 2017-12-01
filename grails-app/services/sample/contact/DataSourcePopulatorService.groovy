@@ -7,7 +7,6 @@ import static org.springframework.security.acls.domain.BasePermission.ADMINISTRA
 import static org.springframework.security.acls.domain.BasePermission.DELETE
 import static org.springframework.security.acls.domain.BasePermission.READ
 import static org.springframework.security.acls.domain.BasePermission.WRITE
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.acls.model.ObjectIdentityGenerator
 import org.springframework.security.acls.model.ObjectIdentityRetrievalStrategy
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -41,9 +40,9 @@ class DataSourcePopulatorService {
 
 	private static final int createEntities = 50
 
-	private @Autowired AclService aclService
-	private @Autowired AclUtilService aclUtilService
-	private @Autowired ObjectIdentityRetrievalStrategy objectIdentityRetrievalStrategy
+	AclService aclService
+	AclUtilService aclUtilService
+	ObjectIdentityRetrievalStrategy objectIdentityRetrievalStrategy
 
 	void populate() {
 
