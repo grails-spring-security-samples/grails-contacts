@@ -91,10 +91,12 @@ class SecureController {
 	 * Displays the "add permission" page for a contact and
 	 * handles submission of the "add permission" form.
 	 */
-	def addPermission(AddPermission addPermission, Long contactId) {
+	def addPermission(AddPermissionCommand addPermission) {
 
-		if (!contactId) {
-			flash.message = 'Contact id is required'
+		if ( addPermission.hasErrors() ) {
+			if ( !addPermission.contactId ) {
+				flash.message = 'Contact id is required'
+			}
 			redirect action: 'index'
 			return
 		}
@@ -152,18 +154,5 @@ class SecureController {
 		[(ADMINISTRATION.mask): message(code: 'select.administer'),
 		 (READ.mask):           message(code: 'select.read'),
 		 (DELETE.mask):         message(code: 'select.delete')]
-	}
-}
-
-class AddPermission {
-
-	private static final List<Integer> ADD_PERMISSIONS = [ADMINISTRATION.mask, READ.mask, DELETE.mask]
-
-	Integer permission = READ.mask
-	String recipient
-
-	static constraints() {
-		permission inList: ADD_PERMISSIONS
-		recipient maxSize: 100
 	}
 }
