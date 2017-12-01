@@ -2,6 +2,7 @@ package sample.contact
 
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
+import grails.gorm.transactions.Transactional
 import org.springframework.security.access.prepost.PostFilter
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.acls.domain.BasePermission
@@ -15,7 +16,6 @@ import grails.compiler.GrailsCompileStatic
 import grails.plugin.springsecurity.SpringSecurityService
 import grails.plugin.springsecurity.acl.AclService
 import grails.plugin.springsecurity.acl.AclUtilService
-import grails.transaction.Transactional
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.util.logging.Slf4j

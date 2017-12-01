@@ -1,5 +1,6 @@
 package sample.contact
 
+import grails.gorm.transactions.Transactional
 import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
 import static org.springframework.security.acls.domain.BasePermission.DELETE
 import static org.springframework.security.acls.domain.BasePermission.READ
@@ -16,7 +17,6 @@ import org.springframework.security.core.context.SecurityContextHolder as SCH
 import grails.compiler.GrailsCompileStatic
 import grails.plugin.springsecurity.acl.AclService
 import grails.plugin.springsecurity.acl.AclUtilService
-import grails.transaction.Transactional
 import sample.contact.auth.Role
 import sample.contact.auth.User
 import sample.contact.auth.UserRole
