@@ -1,7 +1,9 @@
 package sample.contact
 
+import groovy.transform.CompileStatic
 import grails.plugin.springsecurity.annotation.Secured
 
+@CompileStatic
 @Secured(['permitAll'])
 class HelloController {
 
