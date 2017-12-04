@@ -1,3 +1,5 @@
+package sample.contact
+
 import org.springframework.security.acls.model.NotFoundException
 
 class UrlMappings {

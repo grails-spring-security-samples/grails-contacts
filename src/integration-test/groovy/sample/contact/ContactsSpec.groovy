@@ -16,7 +16,7 @@
 package sample.contact
 
 import geb.spock.GebReportingSpec
-import grails.test.mixin.integration.Integration
+import grails.testing.mixin.integration.Integration
 import grails.transaction.Rollback
 import sample.contact.pages.AddPage
 import sample.contact.pages.ContactsPage

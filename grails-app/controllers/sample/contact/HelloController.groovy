@@ -13,6 +13,6 @@ class HelloController {
 	 * The public index page, used for unauthenticated users.
 	 */
 	def index() {
-		[contact: contactService.randomContact]
+		[contact: contactService.findRandomContact()]
 	}
 }

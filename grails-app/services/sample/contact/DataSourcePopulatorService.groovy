@@ -1,8 +1,11 @@
 package sample.contact
 
 import grails.gorm.transactions.Transactional
+import sample.contact.auth.ContactDataService
+import sample.contact.auth.RoleDataService
 import sample.contact.auth.UserDataService
 import sample.contact.auth.UserRoleDataService
+
 import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
 import static org.springframework.security.acls.domain.BasePermission.DELETE
 import static org.springframework.security.acls.domain.BasePermission.READ
@@ -20,11 +23,12 @@ import sample.contact.auth.Role
 import sample.contact.auth.User
 
 @GrailsCompileStatic
-@Transactional
 class DataSourcePopulatorService {
 
 	UserDataService userDataService
 	UserRoleDataService userRoleDataService
+	RoleDataService roleDataService
+	ContactDataService contactDataService
 
 	private static final String[] firstNames = [
 		'Bob', 'Mary', 'James', 'Jane', 'Kristy', 'Kirsty', 'Kate', 'Jeni', 'Angela', 'Melanie', 'Kent',
@@ -44,14 +48,15 @@ class DataSourcePopulatorService {
 	AclUtilService aclUtilService
 	ObjectIdentityRetrievalStrategy objectIdentityRetrievalStrategy
 
+	@Transactional
 	void populate() {
 
 		// Set a user account that will initially own all the created data
 		SCH.context.authentication = new UsernamePasswordAuthenticationToken('rod', 'koala',
 				AuthorityUtils.createAuthorityList('ROLE_IGNORED'))
 
-		Role userRole = new Role('ROLE_USER').save()
-		Role supervisorRole = new Role('ROLE_SUPERVISOR').save()
+		Role userRole = roleDataService.save('ROLE_USER')
+		Role supervisorRole = roleDataService.save('ROLE_SUPERVISOR')
 
 		createUser 'rod',    'koala',  true,  userRole, supervisorRole
 		createUser 'dianne', 'emu',    true,  userRole
@@ -70,14 +75,18 @@ class DataSourcePopulatorService {
 		                ['Amanda Smith',     'amanda@abcdef.com'],
 		                ['Cindy Smith',      'cindy@smith.com'],
 		                ['Jonathan Citizen', 'jonathan@xyz.com']
-		].collect { nameAndEmail -> new Contact((String)nameAndEmail[0], (String)nameAndEmail[1]).save() }
+		].collect { nameAndEmail ->
+			String name = (String)nameAndEmail[0]
+			String email = (String)nameAndEmail[1]
+			contactDataService.save(name, email)
+		}
 
 		Random random = new Random()
 
 		for (int i = 10; i < createEntities; i++) {
 			String firstName = firstNames[random.nextInt(firstNames.size())]
 			String lastName = lastNames[random.nextInt(lastNames.size())]
-			contacts << new Contact("$firstName $lastName", "${firstName}@${lastName.toLowerCase()}.com").save()
+			contacts << new Contact(name:"$firstName $lastName", email: "${firstName}@${lastName.toLowerCase()}.com").save()
 		}
 
 		// Create acl_object_identity rows (and also acl_class rows as needed

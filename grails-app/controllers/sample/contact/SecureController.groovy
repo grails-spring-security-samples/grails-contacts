@@ -1,10 +1,13 @@
 package sample.contact
 
+import groovy.transform.CompileStatic
+import org.springframework.context.MessageSource
+import sample.contact.auth.ContactDataService
+
 import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
 import static org.springframework.security.acls.domain.BasePermission.DELETE
 import static org.springframework.security.acls.domain.BasePermission.READ
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.DataAccessException
 import org.springframework.security.acls.domain.PermissionFactory
 import org.springframework.security.acls.domain.PrincipalSid
@@ -16,22 +19,34 @@ import grails.plugin.springsecurity.SpringSecurityService
 import grails.plugin.springsecurity.acl.AclUtilService
 import grails.plugin.springsecurity.annotation.Secured
 
+@CompileStatic
 @Secured(['ROLE_USER'])
 class SecureController {
+
+	static allowedMethods = [index: 'GET',
+							 create: 'GET',
+							 add: 'POST',
+							 del: 'POST',
+							 addPermission: 'POST',
+							 adminPermission: 'GET',
+							 deletePermission: 'POST',
+							 debug: 'GET',
+	]
 
 	private static final Permission[] HAS_DELETE = [DELETE, ADMINISTRATION]
 	private static final Permission[] HAS_ADMIN = [ADMINISTRATION]
 
-	private @Autowired PermissionFactory aclPermissionFactory
-	private @Autowired AclUtilService aclUtilService
-	private @Autowired ContactService contactService
-	private @Autowired SpringSecurityService springSecurityService
-
+	PermissionFactory aclPermissionFactory
+	AclUtilService aclUtilService
+	ContactService contactService
+	SpringSecurityService springSecurityService
+	MessageSource messageSource
+	ContactDataService contactDataService
 	/**
 	 * The index page for an authenticated user.
 	 * <p>
 	 * This controller displays a list of all the contacts for which the current user has read or
-	 * admin permissions. It makes a call to {@link ContactService#getAll()} which
+	 * admin permissions. It makes a call to {@link ContactService#findAll()} which
 	 * automatically filters the returned list using Spring Security's ACL mechanism (see
 	 * the expression annotations for the details).
 	 * <p>
@@ -41,7 +56,7 @@ class SecureController {
 	 * using the injected <code>aclUtilService</code> instance.
 	 */
 	def index() {
-		List<Contact> myContactsList = contactService.getAll()
+		List<Contact> myContactsList = contactService.findAll()
 		Map<Contact, Boolean> hasDelete = [:]
 		Map<Contact, Boolean> hasAdmin = [:]
 
@@ -54,27 +69,27 @@ class SecureController {
 		[contacts: myContactsList, hasDeletePermission: hasDelete, hasAdminPermission: hasAdmin]
 	}
 
+
+	def create() {
+		[command: new SaveContactCommand()]
+	}
+
 	/**
 	 * Displays the "add contact" form for GET and handles the submission of the contact form,
 	 * creating a new instance if the username and email are valid.
 	 */
-	def add(Contact contact) {
-
-		if (!request.post) {
-			return [command: contact]
+	def add(SaveContactCommand cmd) {
+		if (cmd.hasErrors()) {
+			return [command: cmd]
 		}
 
-		if (contact.hasErrors()) {
-			return [command: contact]
-		}
-
-		contactService.create contact.email, contact.name
+		contactService.create cmd.name, cmd.email
 
 		redirect action: 'index'
 	}
 
 	def del(Long contactId) {
-		Contact contact = contactService.getById(contactId)
+		Contact contact = contactService.findById(contactId)
 		contactService.delete contact
 		[contact: contact]
 	}
@@ -83,7 +98,7 @@ class SecureController {
 	 * Displays the permission admin page for a particular contact.
 	 */
 	def adminPermission(Long contactId) {
-		Contact contact = contactService.getById(contactId)
+		Contact contact = contactService.findById(contactId)
 		[contact: contact, acl: aclUtilService.readAcl(contact)]
 	}
 
@@ -101,7 +116,7 @@ class SecureController {
 			return
 		}
 
-		Contact contact = contactService.getById(contactId)
+		Contact contact = contactService.findById(addPermission.contactId)
 
 		def buildModel = { ->
 			[command: addPermission, contact: contact,
@@ -137,7 +152,7 @@ class SecureController {
 	 */
 	def deletePermission(Long contactId, String sid, Integer permission) {
 
-		Contact contact = contactService.getById(contactId)
+		Contact contact = contactService.findById(contactId)
 		Sid sidObject = new PrincipalSid(sid)
 		Permission p = aclPermissionFactory.buildFromMask(permission)
 
@@ -151,8 +166,10 @@ class SecureController {
 	}
 
 	private Map<Integer, String> listPermissions() {
-		[(ADMINISTRATION.mask): message(code: 'select.administer'),
-		 (READ.mask):           message(code: 'select.read'),
-		 (DELETE.mask):         message(code: 'select.delete')]
+		[
+				(ADMINISTRATION.mask): messageSource.getMessage('select.administer', [] as Object[], 'Admnistration', request.locale),
+		 		(READ.mask): messageSource.getMessage('select.read', [] as Object[], 'Admnistration', request.locale),
+		 		(DELETE.mask): messageSource.getMessage('select.delete', [] as Object[], 'Admnistration', request.locale)
+		] as Map<Integer, String>
 	}
 }

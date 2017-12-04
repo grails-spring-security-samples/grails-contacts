@@ -1,11 +1,11 @@
-<%@page import='org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter' %>
+<%@page import="org.springframework.security.web.WebAttributes; org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter" %>
 <html>
 
 <head>
 	<title>Login</title>
 </head>
 
-<body onload="document.f.elements['j_username'].focus();">
+<body onload="document.f.elements['username'].focus();">
 
 	<h1>Login</h1>
 
@@ -25,7 +25,7 @@
 	<g:if test="${params.login_error}">
 		<font color="red">
 			Your login attempt was not successful, try again.<br/><br/>
-			Reason: ${session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY].message}
+			Reason: ${session[WebAttributes.AUTHENTICATION_EXCEPTION]?.message}
 		</font>
 	</g:if>
 
@@ -33,15 +33,15 @@
 		<g:set var='lastUsername' value="${session.SPRING_SECURITY_LAST_USERNAME}"/>
 	</g:if>
 
-	<form name="f" action='/j_spring_security_check' method="POST">
+	<form name="f" action='/login/authenticate' method="POST">
 		<table>
 			<tr>
 				<td>User:</td>
-				<td><input type='text' name='j_username' id='username' value="${lastUsername}"/></td>
+				<td><input type='text' name='username' id='username' value="${lastUsername}"/></td>
 			</tr>
 			<tr>
 				<td>Password:</td>
-				<td><input type='password' name='j_password' id='password'></td>
+				<td><input type='password' name='password' id='password'></td>
 			</tr>
 			<tr>
 				<td><input type="checkbox" name="_spring_security_remember_me" id='remember_me'></td>

@@ -1,9 +1,7 @@
 package sample.contact
 
-import grails.testing.mixin.integration.Integration
-
 import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION
-
+import grails.testing.mixin.integration.Integration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.acls.domain.PrincipalSid
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -29,7 +27,7 @@ class ContactServiceSpec extends Specification {
 		makeActiveUser 'dianne' // has ROLE_USER
 
 		when:
-		List<Contact> contacts = contactService.getAll()
+		List<Contact> contacts = contactService.findAll()
 
 		then:
 		4 == contacts.size()
@@ -49,7 +47,7 @@ class ContactServiceSpec extends Specification {
 		makeActiveUser 'rod' // has ROLE_SUPERVISOR
 
 		when:
-		List<Contact> contacts = contactService.getAll()
+		List<Contact> contacts = contactService.findAll()
 
 		then:
 		4 == contacts.size()
@@ -61,7 +59,7 @@ class ContactServiceSpec extends Specification {
 
 		assertDoestNotContainContact 5, contacts
 
-		Contact c1 = contactService.getById(4)
+		Contact c1 = contactService.findById(4)
 		contactService.deletePermission c1, new PrincipalSid('bob'), ADMINISTRATION
 		contactService.addPermission    c1, new PrincipalSid('bob'), ADMINISTRATION
 	}
@@ -71,7 +69,7 @@ class ContactServiceSpec extends Specification {
 		makeActiveUser 'scott' // has ROLE_USER
 
 		when:
-		List<Contact> contacts = contactService.getAll();
+		List<Contact> contacts = contactService.findAll();
 
 		then:
 		5 == contacts.size()
@@ -103,14 +101,14 @@ class ContactServiceSpec extends Specification {
 	/**
 	 * Locates the first <code>Contact</code> of the exact name specified.
 	 * <p>
-	 * Uses the {@link ContactService#getAll()} method.
+	 * Uses the {@link ContactService#findAll()} method.
 	 *
 	 * @param id Identify of the contact to locate (must be an exact match)
 	 *
 	 * @return the domain or <code>null</code> if not found
 	 */
 	private Contact getContact(String id) {
-		contactService.getAll().find { it.id == id }
+		contactService.findAll().find { it.id == id }
 	}
 
 	private void makeActiveUser(String username) {

@@ -1,4 +1,4 @@
-<%@page import='org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter' %>
+<%@page import="org.springframework.security.web.WebAttributes; org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter" %>
 
 <html>
 
@@ -25,16 +25,16 @@
 			<p>
 				<font color="red">
 					Your 'su' attempt was not successful, try again.<br/><br/>
-					Reason: ${session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY].message}
+					Reason: ${session[WebAttributes.AUTHENTICATION_EXCEPTION]?.message}
 				</font>
 			</p>
 		</g:if>
 
-		<g:form controller='j_spring_security_switch_user'>
+		<g:form controller='/login/impersonate'>
 			<table>
 				<tr>
 					<td>User:</td>
-					<td><input type='text' name='j_username'></td>
+					<td><input type='text' name='username'></td>
 				</tr>
 				<tr>
 					<td colspan='2'><input name="switch" type="submit" value="Switch to User"></td>

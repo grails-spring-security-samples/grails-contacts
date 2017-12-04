@@ -31,7 +31,12 @@
 			<td>${contact.name}</td>
 			<td>${contact.email}</td>
 			<g:if test="${hasDeletePermission[contact]}">
-				<td><g:link action='del' params='[contactId: contact.id]'>Del</g:link></td>
+				<td>
+					<g:form action="del" controller="secure">
+						<g:hiddenField name="contactId" value="${contact.id}"/>
+						<g:submitButton name="del" value="${message(code: 'contact.del', default: 'Delete')}"/>
+					</g:form>
+				</td>
 			</g:if>
 			<g:else>
 				<td>&nbsp;</td>
@@ -46,7 +51,7 @@
 </g:each>
 	</table>
 
-	<p><g:link action='add'>Add</g:link></p>
+	<p><g:link action='create'>Add</g:link></p>
 
 	<g:form controller='logout'>
 		<g:submitButton name='logoff' value='Logoff (also clears any remember-me cookie)' />

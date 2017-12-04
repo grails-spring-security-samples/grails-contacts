@@ -10,7 +10,7 @@
 
 		<h1>Add Contact</h1>
 
-		<g:form action='add'>
+		<g:form action='add' method="POST">
 			<table width="95%" bgcolor="f8f8ff" border="0" cellspacing="0" cellpadding="5">
 				<tr>
 					<td alignment="right" width="20%">Name:</td>

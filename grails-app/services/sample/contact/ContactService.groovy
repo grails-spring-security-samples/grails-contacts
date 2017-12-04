@@ -1,6 +1,9 @@
 package sample.contact
 
+import grails.gorm.transactions.ReadOnly
 import grails.gorm.transactions.Transactional
+import grails.plugin.springsecurity.acl.AclClass
+import grails.plugin.springsecurity.acl.AclEntry
 import org.springframework.security.access.prepost.PostFilter
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.acls.domain.BasePermission
@@ -9,23 +12,23 @@ import org.springframework.security.acls.model.AccessControlEntry
 import org.springframework.security.acls.model.MutableAcl
 import org.springframework.security.acls.model.Permission
 import org.springframework.security.acls.model.Sid
-
-import grails.compiler.GrailsCompileStatic
 import grails.plugin.springsecurity.SpringSecurityService
 import grails.plugin.springsecurity.acl.AclService
 import grails.plugin.springsecurity.acl.AclUtilService
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
 import groovy.util.logging.Slf4j
-import sample.contact.auth.User
+import sample.contact.auth.ContactDataService
+import sample.contact.auth.UserDataService
 
-@GrailsCompileStatic
+@CompileStatic
 @Slf4j
 class ContactService {
 
 	AclService aclService
 	AclUtilService aclUtilService
 	SpringSecurityService springSecurityService
+	ContactDataService contactDataService
+	UserDataService userDataService
 
 	@PreAuthorize('hasPermission(#contact, admin)')
 	@Transactional
@@ -33,22 +36,34 @@ class ContactService {
 		aclUtilService.addPermission Contact, contact.id, recipient, permission
 	}
 
-	@PreAuthorize('hasRole("ROLE_USER")')
 	@Transactional
-	void create(String email, String name) {
-		Contact contact = new Contact(name, email).save(failOnError: true)
+	protected void addPermission(Contact contact, Permission permission) {
+		aclUtilService.addPermission Contact, contact.id, loggedUsername(), permission
+	}
 
-		String username = springSecurityService.authentication.name
-		// Grant the current principal administrative permission to the contact
-		addPermission contact, new PrincipalSid(username), BasePermission.ADMINISTRATION
+	protected String loggedUsername() {
+		springSecurityService.authentication.name
+	}
 
-		log.debug "Created contact $contact and granted admin permission to recipient $username"
+	@PreAuthorize('hasRole("ROLE_USER")')
+	Contact create(String name, String email) {
+		Contact contact = contactDataService.save(name, email)
+		if ( contact.hasErrors() ) {
+			log.error 'Error while saving contact'
+			return contact
+		}
+
+		addPermission(contact, BasePermission.ADMINISTRATION)
+
+		log.debug "Created contact $contact and granted admin permission to recipient ${loggedUsername()}"
+		contact
 	}
 
 	@PreAuthorize('hasPermission(#contact, "delete") or hasPermission(#contact, admin)')
 	@Transactional
 	void delete(Contact contact) {
-		contact.delete()
+		Long id = contact.id
+		contactDataService.delete(id)
 
 		// Delete the ACL information as well
 		aclUtilService.deleteAcl contact
@@ -75,49 +90,39 @@ class ContactService {
 
 	@PreAuthorize('hasRole("ROLE_USER")')
 	@PostFilter('hasPermission(filterObject, "read") or hasPermission(filterObject, admin)')
-	@Transactional(readOnly = true)
-	List<Contact> getAll() {
+	@ReadOnly
+	List<Contact> findAll() {
 		log.debug 'Returning all contacts'
-		Contact.listOrderById()
+		List<Contact> contactList = contactDataService.findAllOrderById()
+		contactList
 	}
 
-	@CompileStatic(TypeCheckingMode.SKIP)
 	@PreAuthorize('hasRole("ROLE_USER")')
-	@Transactional(readOnly = true)
+	@ReadOnly
 	List<String> getAllRecipients() {
 		log.debug 'Returning all recipients'
-		User.createCriteria().list {
-			projections {
-				property 'username'
-			}
-			order 'username', 'asc'
-		}
+		userDataService.findUserUsername()
 	}
 
 	@PreAuthorize('hasPermission(#id, "sample.contact.Contact", read) or hasPermission(#id, "sample.contact.Contact", admin)')
-	@Transactional(readOnly = true)
-	Contact getById(Long id) {
+	@ReadOnly
+	Contact findById(Long id) {
 		log.debug "Returning contact with id: $id"
-		Contact.get id
+		contactDataService.findById(id)
 	}
 
-	@CompileStatic(TypeCheckingMode.SKIP)
-	@Transactional(readOnly = true)
-	Contact getRandomContact() {
+	@ReadOnly
+	Contact findRandomContact() {
 		log.debug 'Returning random contact'
-		List<Long> ids = Contact.createCriteria().list {
-			projections {
-				property 'id'
-			}
-		}
-
-		Contact.get ids[new Random().nextInt(ids.size())]
+		List<Long> ids = contactDataService.findContactId()
+		Long id = ids[new Random().nextInt(ids.size())]
+		contactDataService.findById(id)
 	}
 
 	@Transactional
 	void update(Contact contact, String email, String name) {
-		contact.email = email
-		contact.name = name
+		Serializable id = contact.id
+		contactDataService.update(id, name, email)
 		log.debug "Updated contact $contact"
 	}
 }

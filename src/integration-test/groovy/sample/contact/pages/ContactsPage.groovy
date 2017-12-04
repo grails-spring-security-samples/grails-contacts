@@ -28,18 +28,18 @@ class ContactsPage extends Page {
 	static at = { assert driver.title == 'Your Contacts'; true}
 	static content = {
 		addContact(to: AddPage) { $('a', text: 'Add') }
-		contacts { moduleList Contact, $('table tr').tail() }
+		contacts { $('table tr').tail().moduleList(ContactModule) }
 		logout { $('input[type=submit]', name: 'logoff') }
 	}
 }
 
-class Contact extends Module {
+class ContactModule extends Module {
 	static content = {
 		cell { $('td', it) }
 		id { cell(0).text().toInteger() }
 		name { cell(1).text() }
 		email { cell(2).text() }
-		delete { cell(3).$('a').click() }
+		delete { cell(3).$('input', value: 'Delete').click() }
 		adminPermission { cell(4).$('a') }
 	}
 }

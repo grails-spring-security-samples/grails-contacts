@@ -1,4 +1,4 @@
-<%@page import="org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter" %>
+<%@page import="org.springframework.security.web.WebAttributes; org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter" %>
 <%@page import="org.springframework.security.core.context.SecurityContextHolder" %>
 
 <html>
@@ -16,12 +16,12 @@
 		<g:if test="${params.login_error}">
 			<font color="red">
 				Your 'Exit User' attempt was not successful, try again.<br/><br/>
-				Reason: ${session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY].message}
+				Reason: ${session[WebAttributes.AUTHENTICATION_EXCEPTION]?.message}
 			</font>
 		</g:if>
 
 		<g:set var='auth' value='${SecurityContextHolder.context.authentication}'/>
-		<g:form controller='j_spring_security_exit_user'>
+		<g:form controller='/logout/impersonate'>
 			<table>
 				<tr>
 					<td>Current User:</td>

@@ -3,8 +3,11 @@ package sample.contact.auth
 import grails.gorm.DetachedCriteria
 import groovy.transform.ToString
 
-import org.apache.commons.lang.builder.HashCodeBuilder
+import org.codehaus.groovy.util.HashCodeHelper
+import grails.compiler.GrailsCompileStatic
 
+@SuppressWarnings(['FactoryMethodName', 'Instanceof'])
+@GrailsCompileStatic
 @ToString(cache=true, includeNames=true, includePackage=false)
 class UserRole implements Serializable {
 
@@ -13,27 +16,23 @@ class UserRole implements Serializable {
 	User user
 	Role role
 
-	UserRole(User u, Role r) {
-		this()
-		user = u
-		role = r
-	}
-
 	@Override
 	boolean equals(other) {
-		if (!(other instanceof UserRole)) {
-			return false
+		if (other instanceof UserRole) {
+			other.userId == user?.id && other.roleId == role?.id
 		}
-
-		other.user?.id == user?.id && other.role?.id == role?.id
 	}
 
 	@Override
 	int hashCode() {
-		def builder = new HashCodeBuilder()
-		if (user) builder.append(user.id)
-		if (role) builder.append(role.id)
-		builder.toHashCode()
+		int hashCode = HashCodeHelper.initHash()
+		if (user) {
+			hashCode = HashCodeHelper.updateHash(hashCode, user.id)
+		}
+		if (role) {
+			hashCode = HashCodeHelper.updateHash(hashCode, role.id)
+		}
+		hashCode
 	}
 
 	static UserRole get(long userId, long roleId) {
@@ -47,51 +46,38 @@ class UserRole implements Serializable {
 	private static DetachedCriteria criteriaFor(long userId, long roleId) {
 		UserRole.where {
 			user == User.load(userId) &&
-			role == Role.load(roleId)
+					role == Role.load(roleId)
 		}
 	}
 
 	static UserRole create(User user, Role role, boolean flush = false) {
-		def instance = new UserRole(user, role)
-		instance.save(flush: flush, insert: true)
+		def instance = new UserRole(user: user, role: role)
+		instance.save(flush: flush)
 		instance
 	}
 
-	static boolean remove(User u, Role r, boolean flush = false) {
-		if (u == null || r == null) return false
-
-		int rowCount = UserRole.where { user == u && role == r }.deleteAll()
-
-		if (flush) { UserRole.withSession { it.flush() } }
-
-		rowCount
+	static boolean remove(User u, Role r) {
+		if (u != null && r != null) {
+			UserRole.where { user == u && role == r }.deleteAll()
+		}
 	}
 
-	static void removeAll(User u, boolean flush = false) {
-		if (u == null) return
-
-		UserRole.where { user == u }.deleteAll()
-
-		if (flush) { UserRole.withSession { it.flush() } }
+	static int removeAll(User u) {
+		u == null ? 0 : UserRole.where { user == u }.deleteAll() as int
 	}
 
-	static void removeAll(Role r, boolean flush = false) {
-		if (r == null) return
-
-		UserRole.where { role == r }.deleteAll()
-
-		if (flush) { UserRole.withSession { it.flush() } }
+	static int removeAll(Role r) {
+		r == null ? 0 : UserRole.where { role == r }.deleteAll() as int
 	}
 
 	static constraints = {
 		role validator: { Role r, UserRole ur ->
-			if (ur.user == null || ur.user.id == null) return
-			boolean existing = false
-			UserRole.withNewSession {
-				existing = UserRole.exists(ur.user.id, r.id)
-			}
-			if (existing) {
-				return 'userRole.exists'
+			if (ur.user?.id) {
+				UserRole.withNewSession {
+					if (UserRole.exists(ur.user.id, r.id)) {
+						return ['userRole.exists']
+					}
+				}
 			}
 		}
 	}
