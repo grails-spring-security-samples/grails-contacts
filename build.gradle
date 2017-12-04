@@ -64,7 +64,7 @@ dependencies {
 	testRuntime "org.seleniumhq.selenium:selenium-firefox-driver:3.6.0"
 	testCompile "org.seleniumhq.selenium:selenium-remote-driver:3.6.0"
 	testCompile "org.seleniumhq.selenium:selenium-api:3.6.0"
-	compile 'org.grails.plugins:spring-security-acl:3.2.0.BUILD-SNAPSHOT'
+	compile 'org.grails.plugins:spring-security-acl:3.2.0'
 }
 
 bootRun {
